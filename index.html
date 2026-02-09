@@ -3,167 +3,32 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SiP — Modern Landing Page</title>
-    <meta name="description" content="A fast, responsive landing page ready to deploy on Vercel.">
-    <meta name="theme-color" content="#0b0f19">
-    <meta property="og:title" content="SiP — Modern Landing Page">
-    <meta property="og:description" content="A fast, responsive landing page ready to deploy on Vercel.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-vercel-domain.vercel.app/">
-    <meta property="og:image" content="https://your-vercel-domain.vercel.app/og-image.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>SiP</title>
+    <meta name="description" content="Landing">
     <link rel="stylesheet" href="/styles.css">
+    <style>
+      html, body { height: 100%; margin: 0; overflow: hidden; background: #000; }
+      .viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+      }
+      .viewport img {
+        max-width: 100vw;
+        max-height: 100vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+    </style>
   </head>
   <body>
-    <header class="site-header">
-      <div class="container header-inner">
-        <div class="brand">
-          <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" fill="url(#grad)"></circle>
-            <defs>
-              <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#7c3aed"/>
-                <stop offset="100%" stop-color="#06b6d4"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="brand-name">SiP</span>
-        </div>
-        <nav class="nav">
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#contact" class="btn btn-outline">Contact</a>
-        </nav>
-      </div>
-    </header>
-
-    <section class="hero">
-      <div class="container hero-inner">
-        <div class="hero-content">
-          <h1>Launch faster with a beautiful landing page</h1>
-          <p>Production-ready, accessible, and optimized for Vercel. Ship your idea today.</p>
-          <div class="cta">
-            <a class="btn btn-primary" href="#contact">Get Started</a>
-            <a class="btn btn-secondary" href="#features">Explore Features</a>
-          </div>
-          <div class="social-proof">
-            <img src="https://dummyimage.com/96x24/1f2937/ffffff&text=Trusted+by+teams" alt="Trusted by teams">
-          </div>
-        </div>
-        <div class="hero-art">
-          <div class="card">
-            <div class="card-header">
-              <div class="dot red"></div>
-              <div class="dot yellow"></div>
-              <div class="dot green"></div>
-            </div>
-            <div class="card-body">
-              <pre><code>// Deploy to Vercel in minutes
-vercel deploy
-// Connect your Git repo and push
-git push origin main
-</code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="features" class="features">
-      <div class="container">
-        <h2>Everything you need</h2>
-        <p class="section-sub">Clean design, fast performance, easy deployment.</p>
-        <div class="grid">
-          <div class="feature">
-            <div class="icon">⚡</div>
-            <h3>Fast</h3>
-            <p>Optimized assets and best practices for quick load times.</p>
-          </div>
-          <div class="feature">
-            <div class="icon">🛠️</div>
-            <h3>Simple</h3>
-            <p>Only HTML/CSS—no build step needed. Perfect for Vercel.</p>
-          </div>
-          <div class="feature">
-            <div class="icon">🔒</div>
-            <h3>Accessible</h3>
-            <p>Semantic markup and high-contrast theme for all users.</p>
-          </div>
-          <div class="feature">
-            <div class="icon">🚀</div>
-            <h3>Deployable</h3>
-            <p>Drop into Vercel and ship. Works out of the box.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="pricing" class="pricing">
-      <div class="container">
-        <h2>Simple pricing</h2>
-        <p class="section-sub">Start free, scale when you grow.</p>
-        <div class="pricing-cards">
-          <div class="pricing-card">
-            <h3>Starter</h3>
-            <p class="price">$0</p>
-            <ul>
-              <li>Basic sections</li>
-              <li>Responsive layout</li>
-              <li>Deploy to Vercel</li>
-            </ul>
-            <a href="#contact" class="btn btn-secondary">Choose Starter</a>
-          </div>
-          <div class="pricing-card highlight">
-            <h3>Pro</h3>
-            <p class="price">$29</p>
-            <ul>
-              <li>Custom branding</li>
-              <li>Analytics ready</li>
-              <li>Priority support</li>
-            </ul>
-            <a href="#contact" class="btn btn-primary">Go Pro</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="contact">
-      <div class="container">
-        <h2>Let’s talk</h2>
-        <p class="section-sub">Tell us about your idea, we’ll help you launch.</p>
-        <form class="contact-form" action="https://formspree.io/f/example" method="POST">
-          <div class="form-row">
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" required placeholder="Your name">
-          </div>
-          <div class="form-row">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required placeholder="you@example.com">
-          </div>
-          <div class="form-row">
-            <label for="message">Message</label>
-            <textarea id="message" name="message" rows="4" required placeholder="What are you building?"></textarea>
-          </div>
-          <button class="btn btn-primary" type="submit">Send Message</button>
-        </form>
-      </div>
-    </section>
-
-    <footer class="site-footer">
-      <div class="container footer-inner">
-        <p>© <span id="y"></span> SiP. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#contact">Contact</a>
-        </div>
-      </div>
-    </footer>
-
-    <script>
-      document.getElementById('y').textContent = new Date().getFullYear();
-    </script>
+    <div class="viewport">
+      <img
+        src="https://cdn.discordapp.com/attachments/1469697302284337243/1470161423739916399/ChatGPT_Image_Feb_8_2026_08_56_17_PM.png?ex=698af2c5&is=6989a145&hm=9e3a216db2c3dfe379ed1d13824aa6287e8491f080c9812f59a17c22cec14e4b&"
+        alt="Landing image">
+    </div>
   </body>
 </html>
