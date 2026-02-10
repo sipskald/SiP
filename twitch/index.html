@@ -26,6 +26,9 @@
       .error { color: #ef4444; padding: 10px 12px; }
       .btn { height: 34px; border-radius: 8px; padding: 0 12px; font-weight: 700; border: 1px solid #1f2937; background: rgba(255,255,255,.04); color: #e5e7eb; }
       .btn:hover { background: rgba(255,255,255,.08); }
+      .settings { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .settings input[type="text"], .settings input[type="password"] { height: 34px; border-radius: 8px; padding: 0 10px; border: 1px solid #1f2937; background: rgba(255,255,255,.02); color: #e5e7eb; }
+      .note { color: #94a3b8; font-size: 12px; }
     </style>
   </head>
   <body>
@@ -35,6 +38,17 @@
         <div class="controls">
           <button id="refresh" class="btn">Refresh</button>
           <span class="updated" id="updated"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="body settings">
+          <span class="note">Optional: Use Helix “Get Chatters” (requires Client-ID and token with moderator:read:chatters)</span>
+          <input id="cid" type="text" placeholder="Client ID" />
+          <input id="tok" type="password" placeholder="Bearer token" />
+          <label style="display:flex;align-items:center;gap:6px;">
+            <input id="useHelix" type="checkbox" /> Use Helix
+          </label>
+          <button id="saveCfg" class="btn">Save</button>
         </div>
       </div>
       <div class="grid">
@@ -59,29 +73,83 @@
       const countEl = document.getElementById('count');
       const listEl = document.getElementById('chatters');
       const errorEl = document.getElementById('error');
+      const cidEl = document.getElementById('cid');
+      const tokEl = document.getElementById('tok');
+      const useHelixEl = document.getElementById('useHelix');
+      const saveCfgEl = document.getElementById('saveCfg');
+      const cfg = {
+        clientId: localStorage.getItem('tw_client_id') || '',
+        token: localStorage.getItem('tw_token') || '',
+        useHelix: localStorage.getItem('tw_use_helix') === '1'
+      };
+      cidEl.value = cfg.clientId;
+      tokEl.value = cfg.token ? '********' : '';
+      useHelixEl.checked = cfg.useHelix;
+      saveCfgEl.addEventListener('click', () => {
+        const cid = cidEl.value.trim();
+        const tok = tokEl.value.trim();
+        localStorage.setItem('tw_client_id', cid);
+        if (tok && tok !== '********') localStorage.setItem('tw_token', tok);
+        localStorage.setItem('tw_use_helix', useHelixEl.checked ? '1' : '0');
+        load();
+      });
+
+      async function fetchHelixChatters(login) {
+        const clientId = localStorage.getItem('tw_client_id') || '';
+        const token = localStorage.getItem('tw_token') || '';
+        if (!clientId || !token) throw new Error('missing-credentials');
+        const h = { 'Client-ID': clientId, 'Authorization': 'Bearer ' + token };
+        const ures = await fetch('https://api.twitch.tv/helix/users?login=' + encodeURIComponent(login), { headers: h });
+        if (!ures.ok) throw new Error('users ' + ures.status);
+        const ujson = await ures.json();
+        const b = (ujson.data && ujson.data[0]) ? ujson.data[0] : null;
+        if (!b) throw new Error('no-user');
+        const broadcasterId = b.id;
+        // moderator_id: use broadcasterId by default; token must belong to moderator or broadcaster
+        const cres = await fetch('https://api.twitch.tv/helix/chat/chatters?broadcaster_id=' + broadcasterId + '&moderator_id=' + broadcasterId, { headers: h });
+        if (!cres.ok) throw new Error('chatters ' + cres.status);
+        const cjson = await cres.json();
+        const arr = Array.isArray(cjson.data) ? cjson.data : [];
+        // Each entry: { user_id, user_login, user_name }
+        return arr.map(x => ({ name: x.user_login, role: 'viewer' }));
+      }
+
+      async function fetchTmiChatters(login) {
+        const res = await fetch('https://tmi.twitch.tv/group/user/' + encodeURIComponent(login) + '/chatters', { cache: 'no-store' });
+        if (!res.ok) throw new Error('tmi ' + res.status);
+        const data = await res.json();
+        const groups = data.chatters || {};
+        const names = Object.values(groups).flat();
+        return names.map(n => {
+          let r = 'viewer';
+          if (Array.isArray(groups.moderators) && groups.moderators.includes(n)) r = 'moderator';
+          if (Array.isArray(groups.vips) && groups.vips.includes && groups.vips.includes(n)) r = 'vip';
+          return { name: n, role: r };
+        });
+      }
+
       async function load() {
         updatedEl.textContent = 'Loading...';
         errorEl.style.display = 'none';
         listEl.innerHTML = '';
         try {
-          const res = await fetch('https://tmi.twitch.tv/group/user/sipskald/chatters', { cache: 'no-store' });
-          if (!res.ok) throw new Error('status ' + res.status);
-          const data = await res.json();
-          const groups = data.chatters || {};
-          const names = Object.values(groups).flat();
-          countEl.textContent = data.chatter_count || names.length;
-          names.sort((a,b)=>a.localeCompare(b));
+          const useHelix = (localStorage.getItem('tw_use_helix') === '1');
+          let entries = [];
+          if (useHelix) {
+            entries = await fetchHelixChatters('sipskald');
+          } else {
+            entries = await fetchTmiChatters('sipskald');
+          }
+          const names = entries.map(e => e.name).sort((a,b)=>a.localeCompare(b));
+          countEl.textContent = String(entries.length);
           const frag = document.createDocumentFragment();
           names.forEach(n => {
             const li = document.createElement('li');
             const span = document.createElement('span');
             span.textContent = n;
             const role = document.createElement('span');
-            let r = 'viewer';
-            if (groups.moderators && groups.moderators.includes(n)) r = 'moderator';
-            if (groups.vips && groups.vips.includes ? groups.vips.includes(n) : false) r = 'vip';
             role.className = 'badge';
-            role.textContent = r;
+            role.textContent = (entries.find(e => e.name === n)?.role) || 'viewer';
             li.appendChild(span);
             li.appendChild(role);
             frag.appendChild(li);
@@ -91,7 +159,14 @@
           updatedEl.textContent = 'Updated ' + d.toLocaleTimeString();
         } catch (e) {
           errorEl.style.display = 'block';
-          errorEl.textContent = 'Failed to load chatters';
+          const msg = String(e && e.message || e);
+          if (msg.startsWith('chatters 401') || msg.startsWith('chatters 403') || msg === 'missing-credentials') {
+            errorEl.textContent = 'Helix requires Client-ID + token with moderator:read:chatters';
+          } else if (msg.startsWith('tmi')) {
+            errorEl.textContent = 'TMI chatters failed; try enabling Helix above';
+          } else {
+            errorEl.textContent = 'Failed to load chatters';
+          }
           updatedEl.textContent = '';
         }
       }
