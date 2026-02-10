@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Twitch Callback</title>
+    <style>
+      body { background:#0b0f19; color:#e5e7eb; margin:0; display:grid; place-items:center; min-height:100vh; }
+      .box { border:1px solid #1f2937; border-radius:14px; background:rgba(255,255,255,.03); padding:20px; width:min(600px,92vw); }
+      .status { font-size:14px; color:#94a3b8; }
+      .error { color:#ef4444; }
+      .ok { color:#22c55e; }
+      .btn { margin-top:12px; height:36px; border-radius:8px; padding:0 12px; font-weight:700; border:1px solid #1f2937; background:rgba(255,255,255,.04); color:#e5e7eb; }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div id="msg" class="status">Processing authorization...</div>
+      <button id="back" class="btn" style="display:none">Back to Twitch</button>
+    </div>
+    <script>
+      async function run() {
+        const p = new URLSearchParams(location.search);
+        const code = p.get('code');
+        const state = p.get('state');
+        const saved = sessionStorage.getItem('tw_state');
+        const verifier = sessionStorage.getItem('tw_verifier');
+        const cid = localStorage.getItem('tw_client_id') || '';
+        const msg = document.getElementById('msg');
+        const back = document.getElementById('back');
+        if (!code || !state || !verifier || !cid || saved !== state) {
+          msg.textContent = 'Authorization failed. Please retry from /twitch.';
+          msg.className = 'status error';
+          back.style.display = 'inline-block';
+          back.onclick = () => location.href = '/twitch/';
+          return;
+        }
+        const redirect = location.origin + '/twitch/callback/';
+        const body = new URLSearchParams({
+          client_id: cid,
+          grant_type: 'authorization_code',
+          redirect_uri: redirect,
+          code,
+          code_verifier: verifier
+        });
+        try {
+          const res = await fetch('https://id.twitch.tv/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+          });
+          if (!res.ok) throw new Error('token ' + res.status);
+          const json = await res.json();
+          const token = json.access_token;
+          if (!token) throw new Error('no-token');
+          localStorage.setItem('tw_token', token);
+          localStorage.setItem('tw_use_helix', '1');
+          msg.textContent = 'Authorized. Redirecting...';
+          msg.className = 'status ok';
+          location.href = '/twitch/';
+        } catch (e) {
+          msg.textContent = 'Token exchange failed.';
+          msg.className = 'status error';
+          back.style.display = 'inline-block';
+          back.onclick = () => location.href = '/twitch/';
+        }
+      }
+      run();
+    </script>
+  </body>
+ </html>

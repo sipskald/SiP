@@ -29,6 +29,7 @@
       .settings { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
       .settings input[type="text"], .settings input[type="password"] { height: 34px; border-radius: 8px; padding: 0 10px; border: 1px solid #1f2937; background: rgba(255,255,255,.02); color: #e5e7eb; }
       .note { color: #94a3b8; font-size: 12px; }
+      .oauth { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
     </style>
   </head>
   <body>
@@ -49,6 +50,10 @@
             <input id="useHelix" type="checkbox" /> Use Helix
           </label>
           <button id="saveCfg" class="btn">Save</button>
+          <div class="oauth">
+            <button id="oauth" class="btn">Sign in with Twitch</button>
+            <span class="note">Redirect URI must be set to <span id="redir"></span></span>
+          </div>
         </div>
       </div>
       <div class="grid">
@@ -93,6 +98,40 @@
         localStorage.setItem('tw_use_helix', useHelixEl.checked ? '1' : '0');
         load();
       });
+      document.getElementById('redir').textContent = location.origin + '/twitch/callback/';
+
+      function b64url(buf) {
+        let s = '';
+        const bytes = new Uint8Array(buf);
+        for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+        return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+/g,'');
+      }
+      async function startOAuth() {
+        const cid = localStorage.getItem('tw_client_id') || '';
+        if (!cid) { alert('Enter and save Client ID first'); return; }
+        const redirect = location.origin + '/twitch/callback/';
+        const verBytes = new Uint8Array(32);
+        crypto.getRandomValues(verBytes);
+        const verifier = b64url(verBytes.buffer);
+        const challengeBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+        const challenge = b64url(challengeBuf);
+        const stateBytes = new Uint8Array(16);
+        crypto.getRandomValues(stateBytes);
+        const state = b64url(stateBytes.buffer);
+        sessionStorage.setItem('tw_verifier', verifier);
+        sessionStorage.setItem('tw_state', state);
+        const params = new URLSearchParams({
+          client_id: cid,
+          redirect_uri: redirect,
+          response_type: 'code',
+          scope: 'moderator:read:chatters',
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+          state
+        });
+        window.location.href = 'https://id.twitch.tv/oauth2/authorize?' + params.toString();
+      }
+      document.getElementById('oauth').addEventListener('click', startOAuth);
 
       async function fetchHelixChatters(login) {
         const clientId = localStorage.getItem('tw_client_id') || '';
