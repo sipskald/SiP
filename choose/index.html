@@ -13,16 +13,20 @@
       .card .img-wrap { aspect-ratio: 4/3; display: grid; place-items: center; background: rgba(0,0,0,.3); }
       .card img { max-width: 100%; max-height: 100%; object-fit: contain; }
       .card .caption { padding: 12px; text-align: center; font-weight: 700; }
+      .card-link { display: block; text-decoration: none; color: inherit; }
+      .card-link:focus-visible { outline: 2px solid #7c3aed; outline-offset: 4px; }
     </style>
   </head>
   <body>
     <div class="wrap">
       <div class="grid">
         <div class="card">
-          <div class="img-wrap">
-            <img src="https://cdn.discordapp.com/attachments/1469697302284337243/1470161423739916399/ChatGPT_Image_Feb_8_2026_08_56_17_PM.png?ex=698af2c5&is=6989a145&hm=9e3a216db2c3dfe379ed1d13824aa6287e8491f080c9812f59a17c22cec14e4b&" alt="twitch">
-          </div>
-          <div class="caption">twitch</div>
+          <a href="/twitch/" class="card-link" aria-label="twitch">
+            <div class="img-wrap">
+              <img src="https://cdn.discordapp.com/attachments/1469697302284337243/1470161423739916399/ChatGPT_Image_Feb_8_2026_08_56_17_PM.png?ex=698af2c5&is=6989a145&hm=9e3a216db2c3dfe379ed1d13824aa6287e8491f080c9812f59a17c22cec14e4b&" alt="twitch">
+            </div>
+            <div class="caption">twitch</div>
+          </a>
         </div>
       </div>
     </div>
